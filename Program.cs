@@ -15,7 +15,6 @@ namespace Parallelism
 {
     class Program
     {
-        //private static object sync=new object();
         static async Task Main(string[] args)
         {
              string path =@"data";
@@ -44,13 +43,16 @@ namespace Parallelism
                 Task algo=Task.Run(async() =>
                 {
                     comments=await guardarComments(comments,index);
+                    string path=$@"data/{postlist[index]}.txt";
+                    //using (StreamReader sr=File.Exists(path)?File.CreateText(path):File.AppendText(path)); //
+                    await File.WriteAllTextAsync(path,$"{comments[index].Name}");
+                    await File.AppendAllTextAsync(path,$"{comments[index].Body}");
                 });
                 algo.Wait();
             });
-            
-                
 
-        
+
+            
         }
 
 
@@ -58,16 +60,11 @@ namespace Parallelism
 
         static async Task<List<PostData>>guardarPost(List<PostData> posts)
         {
-            //List<string> pp=new List<string>();
-            // Call asynchronous network methods in a try/catch block to handle exceptions.
             try	
             {
                 HttpResponseMessage response = await client.GetAsync($"https://jsonplaceholder.typicode.com/posts");
                 response.EnsureSuccessStatusCode();
                 string responseBody = await response.Content.ReadAsStringAsync();
-                //string responseBody = await client.GetStringAsync(uri);
-                //Console.WriteLine(responseBody);
-                //var savejson=JsonSerializer.Serialize(responseBody);
                 posts =JsonConvert.DeserializeObject<List<PostData>>(responseBody);
                 Parallel.ForEach(posts, p=>
                 {
@@ -87,21 +84,15 @@ namespace Parallelism
 
         static async Task<List<Comments>>guardarComments(List<Comments> com,int poss)
         {
-            //List<string> pp=new List<string>();
-            // Call asynchronous network methods in a try/catch block to handle exceptions.
             try	
             {
                 HttpResponseMessage response = await client.GetAsync($"https://jsonplaceholder.typicode.com/posts/{poss}/comments");
                 response.EnsureSuccessStatusCode();
                 string responseBody = await response.Content.ReadAsStringAsync();
-                //string responseBody = await client.GetStringAsync(uri);
-                //Console.WriteLine(responseBody);
-                //var savejson=JsonSerializer.Serialize(responseBody);
                 com =JsonConvert.DeserializeObject<List<Comments>>(responseBody);
                 Parallel.ForEach(com, p=>
                 {
                     com.Add(p);
-                    //pp.Add(p.Title);
                     Console.WriteLine("Comments: " + p.Name);
                 });
             }
