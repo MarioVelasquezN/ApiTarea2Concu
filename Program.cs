@@ -18,17 +18,37 @@ namespace Parallelism
         //private static object sync=new object();
         static async Task Main(string[] args)
         {
-            //msft.us, aapl.us
-            //Console.WriteLine("Tickers: ");
-            //string? ticker=Console.ReadLine();
-            //string[] strings = ticker.Split();
-            //var tickers= strings;
-           // var stockTasks=ticker.Select(t=> GetStocksAsync(t));
-            //var stockData=await Task.WhenAll(stockTasks);
-            //foreach(var t in tickers)
-            //{
-                await guardarPost();
-            //}
+             string path =@"data";
+
+            try{
+                if(Directory.Exists(path)){
+                    Console.WriteLine("El directorio ya esta creado");
+                } 
+                else{
+                    DirectoryInfo inf =Directory.CreateDirectory(path);
+                }
+            }catch(Exception e){
+                Console.WriteLine("El directorio Fallo: {0}",e.ToString());
+            }
+
+            List<PostData> postlist = new List<PostData>();
+            List<Comments> comments = new List<Comments>();
+            Task cargar=Task.Run(async() =>
+            {
+                postlist=await guardarPost(postlist);
+            });
+            cargar.Wait();
+            
+            Parallel.For(0,postlist.Count,index=>
+            {
+                Task algo=Task.Run(async() =>
+                {
+                    comments=await guardarComments(comments,index);
+                });
+                algo.Wait();
+            });
+            
+                
 
         
         }
@@ -36,9 +56,8 @@ namespace Parallelism
 
         static readonly HttpClient client = new HttpClient();
 
-        static async Task guardarPost()
+        static async Task<List<PostData>>guardarPost(List<PostData> posts)
         {
-            List<PostData> posts;
             //List<string> pp=new List<string>();
             // Call asynchronous network methods in a try/catch block to handle exceptions.
             try	
@@ -55,7 +74,6 @@ namespace Parallelism
                     posts.Add(p);
                     //pp.Add(p.Title);
                     Console.WriteLine("PostTitle: " + p.Title);
-                    
                 });
             }
             catch(HttpRequestException e)
@@ -63,51 +81,37 @@ namespace Parallelism
                 Console.WriteLine("\nException Caught!");	
                 Console.WriteLine("Message :{0} ",e.Message);
             }
-
-            //Console.WriteLine(pp.Count());
+            return posts;
+            
         }
 
-        public async Task createFile(String token){
-            var postId=token;
-            string folderName=@"C:\Users\rolan\Documents\UNIVERSIDAD\concurrencia\tarea2AP\Posts";
-            System.IO.Directory.CreateDirectory(folderName);
-            string fileName=postId;
-            folderName=System.IO.Path.Combine(folderName,fileName);
-            Console.WriteLine("Direccion de mi Archivo: {0}\n",folderName);
-             if (!System.IO.File.Exists(folderName))
+        static async Task<List<Comments>>guardarComments(List<Comments> com,int poss)
         {
-            using (System.IO.FileStream fs = System.IO.File.Create(folderName))
+            //List<string> pp=new List<string>();
+            // Call asynchronous network methods in a try/catch block to handle exceptions.
+            try	
             {
-               
+                HttpResponseMessage response = await client.GetAsync($"https://jsonplaceholder.typicode.com/posts/{poss}/comments");
+                response.EnsureSuccessStatusCode();
+                string responseBody = await response.Content.ReadAsStringAsync();
+                //string responseBody = await client.GetStringAsync(uri);
+                //Console.WriteLine(responseBody);
+                //var savejson=JsonSerializer.Serialize(responseBody);
+                com =JsonConvert.DeserializeObject<List<Comments>>(responseBody);
+                Parallel.ForEach(com, p=>
+                {
+                    com.Add(p);
+                    //pp.Add(p.Title);
+                    Console.WriteLine("Comments: " + p.Name);
+                });
             }
-        }
-        else
-        {
-            Console.WriteLine("File \"{0}\" already exists.", fileName);
-            return;
-        }
-
-        // Read and display the data from your file.
-        try
-        {
-            byte[] readBuffer = System.IO.File.ReadAllBytes(folderName);
-            foreach (byte b in readBuffer)
+            catch(HttpRequestException e)
             {
-                Console.Write(b + " ");
+                Console.WriteLine("\nException Caught!");	
+                Console.WriteLine("Message :{0} ",e.Message);
             }
-            Console.WriteLine();
-        }
-        catch (System.IO.IOException e)
-        {
-            Console.WriteLine(e.Message);
-        }
-
-        // Keep the console window open in debug mode.
-        System.Console.WriteLine("Press any key to exit.");
-        System.Console.ReadKey();
-    
-            // await File.WriteAllTextAsync(@"C:\Users\rolan\Documents\UNIVERSIDAD\concurrencia\tarea2AP\{postId}.txt", postId);
-            //Parallel.ForEach();
+            return com;
+            
         }
 
     }
