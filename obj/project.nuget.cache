@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "8BviD31KVpkS/8Cm0nGt75rxvXiBu3b3X5cLiL7JGIZ6sQnPekmEAugJDxqt/q0FryxB6/vicPLKRBzgEd4UfA==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\rolan\\Documents\\UNIVERSIDAD\\concurrencia\\tarea2API\\tarea3API.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\rolan\\.nuget\\packages\\csvhelper\\28.0.1\\csvhelper.28.0.1.nupkg.sha512",
+    "C:\\Users\\rolan\\.nuget\\packages\\newtonsoft.json\\13.0.1\\newtonsoft.json.13.0.1.nupkg.sha512"
+  ],
+  "logs": []
+}
