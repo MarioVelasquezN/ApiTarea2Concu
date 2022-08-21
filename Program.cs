@@ -45,8 +45,12 @@ namespace Parallelism
                     comments=await guardarComments(comments,index);
                     string path=$@"data/{postlist[index]}.txt";
                     //using (StreamReader sr=File.Exists(path)?File.CreateText(path):File.AppendText(path)); //
-                    await File.WriteAllTextAsync(path,$"{comments[index].Name}");
-                    await File.AppendAllTextAsync(path,$"{comments[index].Body}");
+                    await File.WriteAllTextAsync(path,$"Name: {comments[index].Name}");
+                    await File.AppendAllTextAsync(path,$"Body: {comments[index].Body}");
+                    foreach (var comment in comments){
+                        System.Console.WriteLine($"PostId:{comment.PostId} Comment:{comment.Body}");
+                    }
+                    await File.AppendAllTextAsync(path,"\n");
                 });
                 algo.Wait();
             });
